@@ -1,0 +1,4 @@
+allowBuilds:
+  '@clerk/shared': true
+  supabase: true
+  unrs-resolver: true

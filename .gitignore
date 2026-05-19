@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# TypeScript build artifacts
+*.tsbuildinfo
+
+# Production
+build/
+dist/
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
