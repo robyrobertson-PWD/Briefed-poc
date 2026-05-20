@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,8 +13,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body>
+          <div
+            role="status"
+            style={{
+              background: "#7f1d1d",
+              color: "#fff",
+              textAlign: "center",
+              padding: "6px 12px",
+              fontSize: "13px",
+              fontWeight: 600,
+              letterSpacing: "0.02em",
+            }}
+          >
+            DEMO — NOT FOR PRODUCTION USE · Sandbox vendors, synthetic data only
+          </div>
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { publicEnv } from "@/lib/env";
+import { clientEnv } from "@/lib/env/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,7 +54,7 @@ export async function GET() {
     status: allOk ? "ok" : "error",
     timestamp: new Date().toISOString(),
     checks,
-    demo_mode: publicEnv.NEXT_PUBLIC_DEMO_MODE === "true",
+    demo_mode: clientEnv.NEXT_PUBLIC_DEMO_MODE === "true",
   };
 
   return NextResponse.json(body, { status: allOk ? 200 : 503 });

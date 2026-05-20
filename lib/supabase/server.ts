@@ -1,5 +1,7 @@
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { serverEnv, publicEnv } from "@/lib/env";
+import { serverEnv } from "@/lib/env/server";
+import { clientEnv } from "@/lib/env/client";
 import type { Database } from "@/lib/supabase/types";
 
 /**
@@ -10,7 +12,7 @@ import type { Database } from "@/lib/supabase/types";
  */
 export function createServerClient() {
   return createClient<Database>(
-    publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+    clientEnv.NEXT_PUBLIC_SUPABASE_URL,
     serverEnv.SUPABASE_SERVICE_ROLE_KEY,
     {
       auth: {
