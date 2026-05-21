@@ -76,8 +76,10 @@ Pre-launch POC for Briefed, a consumer income-verification platform.
    - `http://localhost:3000/api/health` — returns `{"status":"ok",...}`.
    - `http://localhost:3000/dashboard` (signed out) — redirects to Clerk sign-in.
    - After sign-up → `/dashboard` renders your `clerk_user_id` and `profile_id`.
+   - `/settings/privacy` (signed in) — eight per-purpose consent toggles render; toggling one persists across a refresh.
+   - GPC: send a request with the `Sec-GPC: 1` header (e.g. `curl -H "Sec-GPC: 1" http://localhost:3000/`) and confirm a row lands in `gpc_signals` with `request_path` set and `session_id` = Clerk user id if signed in, otherwise null.
 
-## What's in the app (through spec v2)
+## What's in the app (through spec v3)
 
 - Next.js 14 App Router with TypeScript and Tailwind
 - Supabase clients: service-role for server writes/health; Clerk-aware browser client (`useSupabaseBrowserClient`) for user-scoped reads
@@ -86,15 +88,20 @@ Pre-launch POC for Briefed, a consumer income-verification platform.
 - Clerk authentication: provider, middleware (`middleware.ts`), `/sign-in` and `/sign-up` routes
 - DEMO banner pinned in the root layout
 - Lazy profile provisioning on first authenticated request (`lib/profile.ts`)
-- Protected `/dashboard` route proving the chain end to end
+- Protected `/dashboard` route proving the auth → profile chain end to end
+- GPC detection in middleware: every matched request is checked for `Sec-GPC`; observations are logged to `gpc_signals` non-blocking via `event.waitUntil`
+- Consent-logging server action (`lib/actions/consent.ts`) — append-only writes to `consents` capturing IP, user-agent, current notice version, hash of the rendered consent text, and whether a GPC signal was present
+- Consent settings page at `/settings/privacy` — eight per-purpose toggles, no bundled "agree to all"; the current-state read goes through the browser client and is the first real exercise of the spec-v2 RLS policies
 - Type-safe env loader split into server-only (`lib/env/server.ts`, guarded by `import "server-only"`) and client-safe (`lib/env/client.ts`)
 - `/api/health` endpoint exercising the DB connection
 
+**Note on consent copy.** `lib/consent/copy.ts` contains placeholder strings only. Final wording is owned by the Designer agent (trust voice, microcopy) and the Regulatory Reviewer agent (verb discipline, per-purpose explanation text). Replace before this surface is anything but DEMO.
+
 ## What's NOT in the app yet (added in later specs)
 
-- GPC detection middleware writing to `gpc_signals` (spec v3)
-- Consent-grant UI and consent-logging server action (spec v3)
 - Dashboard content — capacity pillar, borrowing-power read, weekly action (design-led, later)
+- At-signup consent-at-collection flow (production-MVP launch gate, not POC)
+- Privacy-rights request UI (access/delete/export), authorized-agent intake, state-appeal workflows (MVP-era)
 - Income-calc engine integration (spec v4)
 - Plaid integration (week 3)
 - Tax-return upload + LLM extraction (week 4)
@@ -104,6 +111,7 @@ Pre-launch POC for Briefed, a consumer income-verification platform.
 
 - `../Briefed Engineering Architect/scaffold-spec-v1.md` — initial scaffold spec
 - `../Briefed Engineering Architect/spec-v2-auth-and-rls.md` — auth + RLS
+- `../Briefed Engineering Architect/spec-v3-consent-and-gpc.md` — consent surface + GPC detection
 - `../Briefed CPO/regulatory-architecture-v1.md` — Path A/B framework
 - `../Briefed CPO/privacy-notice-work-list-v1.md` — operational obligations the schema reflects
 - `../Briefed CPO/poc-build-plan-v1.md` — week-by-week build sequence
