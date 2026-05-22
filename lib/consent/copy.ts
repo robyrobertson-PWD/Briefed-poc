@@ -13,6 +13,7 @@ export const CONSENT_COPY: Record<string, { label: string; explanation: string }
   ssn_identity:   { label: "SSN for identity verification", explanation: "[PLACEHOLDER] We use the last 4 of your SSN only to confirm your identity, then discard it." },
   derived_income: { label: "Your income calculation",       explanation: "[PLACEHOLDER] We retain your calculated qualifying income so you can see it over time." },
   marketing:      { label: "Product emails",                explanation: "[PLACEHOLDER] Occasional product and educational emails. Opt out anytime." },
+  income_docs_uploaded: { label: "Uploaded income documents", explanation: "[PLACEHOLDER] We parse documents you upload — paystubs, 1099s, tax returns, bank statements — to calculate your income. We do not store your SSN." },
 };
 
 export async function sha256(input: string): Promise<string> {

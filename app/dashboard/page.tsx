@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ensureProfile } from "@/lib/profile";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,11 @@ export default async function DashboardPage() {
       <p style={{ color: "#666", marginTop: 8 }}>
         You are signed in. This page is protected by Clerk middleware and your
         profile is provisioned in Supabase.
+      </p>
+      <p style={{ marginTop: 16 }}>
+        <Link href="/documents" style={{ color: "#1d4ed8" }}>
+          Upload income documents →
+        </Link>
       </p>
       <pre style={{ marginTop: 16, fontSize: 12, color: "#888" }}>
         clerk_user_id: {clerkUserId}{"\n"}

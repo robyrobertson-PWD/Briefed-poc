@@ -8,7 +8,7 @@ import { z } from "zod";
 const serverSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   CLERK_SECRET_KEY: z.string().min(1),
-  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_API_KEY: z.string().min(1),
   PLAID_CLIENT_ID: z.string().optional(),
   PLAID_SECRET_SANDBOX: z.string().optional(),
   PINWHEEL_API_KEY_SANDBOX: z.string().optional(),
