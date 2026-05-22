@@ -174,6 +174,54 @@ export type Database = {
           },
         ]
       }
+      document_fraud_signals: {
+        Row: {
+          created_at: string
+          detector_version: string | null
+          id: string
+          income_document_id: string
+          profile_id: string
+          severity: string
+          signal_result: Json
+          signal_type: string
+        }
+        Insert: {
+          created_at?: string
+          detector_version?: string | null
+          id?: string
+          income_document_id: string
+          profile_id: string
+          severity?: string
+          signal_result?: Json
+          signal_type: string
+        }
+        Update: {
+          created_at?: string
+          detector_version?: string | null
+          id?: string
+          income_document_id?: string
+          profile_id?: string
+          severity?: string
+          signal_result?: Json
+          signal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_fraud_signals_income_document_id_fkey"
+            columns: ["income_document_id"]
+            isOneToOne: false
+            referencedRelation: "income_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_fraud_signals_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gpc_signals: {
         Row: {
           gpc_header_value: string
@@ -215,6 +263,78 @@ export type Database = {
           },
         ]
       }
+      income_documents: {
+        Row: {
+          delete_after: string
+          deleted_at: string | null
+          document_type: string
+          filename: string
+          id: string
+          mime_type: string
+          parse_completed_at: string | null
+          parse_status: string
+          period_end: string | null
+          period_start: string | null
+          profile_id: string
+          size_bytes: number
+          storage_path: string
+          tax_year: number | null
+          uploaded_at: string
+          vendor_terms_version_id: string
+        }
+        Insert: {
+          delete_after?: string
+          deleted_at?: string | null
+          document_type: string
+          filename: string
+          id?: string
+          mime_type: string
+          parse_completed_at?: string | null
+          parse_status?: string
+          period_end?: string | null
+          period_start?: string | null
+          profile_id: string
+          size_bytes: number
+          storage_path: string
+          tax_year?: number | null
+          uploaded_at?: string
+          vendor_terms_version_id: string
+        }
+        Update: {
+          delete_after?: string
+          deleted_at?: string | null
+          document_type?: string
+          filename?: string
+          id?: string
+          mime_type?: string
+          parse_completed_at?: string | null
+          parse_status?: string
+          period_end?: string | null
+          period_start?: string | null
+          profile_id?: string
+          size_bytes?: number
+          storage_path?: string
+          tax_year?: number | null
+          uploaded_at?: string
+          vendor_terms_version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_documents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_documents_vendor_terms_version_id_fkey"
+            columns: ["vendor_terms_version_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_terms_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income_outputs: {
         Row: {
           applied_addbacks: Json
@@ -225,13 +345,14 @@ export type Database = {
           engine_version: string
           id: string
           input_bank_connection_ids: string[]
+          input_document_ids: string[]
           input_snapshot_sha256: string
-          input_tax_document_ids: string[]
           output_explanation: string | null
           profile_id: string
           qualifying_income_annual: number
           qualifying_income_monthly: number
           rules_version: string
+          source_review_id: string | null
         }
         Insert: {
           applied_addbacks?: Json
@@ -242,13 +363,14 @@ export type Database = {
           engine_version: string
           id?: string
           input_bank_connection_ids?: string[]
+          input_document_ids?: string[]
           input_snapshot_sha256: string
-          input_tax_document_ids?: string[]
           output_explanation?: string | null
           profile_id: string
           qualifying_income_annual: number
           qualifying_income_monthly: number
           rules_version: string
+          source_review_id?: string | null
         }
         Update: {
           applied_addbacks?: Json
@@ -259,17 +381,79 @@ export type Database = {
           engine_version?: string
           id?: string
           input_bank_connection_ids?: string[]
+          input_document_ids?: string[]
           input_snapshot_sha256?: string
-          input_tax_document_ids?: string[]
           output_explanation?: string | null
           profile_id?: string
           qualifying_income_annual?: number
           qualifying_income_monthly?: number
           rules_version?: string
+          source_review_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "income_outputs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "income_outputs_source_review_id_fkey"
+            columns: ["source_review_id"]
+            isOneToOne: false
+            referencedRelation: "income_review_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      income_review_queue: {
+        Row: {
+          candidate_payload: Json
+          created_at: string
+          id: string
+          parsed_document_field_id: string | null
+          profile_id: string
+          resolved_at: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_payload?: Json
+          created_at?: string
+          id?: string
+          parsed_document_field_id?: string | null
+          profile_id: string
+          resolved_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_payload?: Json
+          created_at?: string
+          id?: string
+          parsed_document_field_id?: string | null
+          profile_id?: string
+          resolved_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "income_review_queue_parsed_document_field_id_fkey"
+            columns: ["parsed_document_field_id"]
+            isOneToOne: false
+            referencedRelation: "parsed_document_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "income_review_queue_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -307,7 +491,7 @@ export type Database = {
         }
         Relationships: []
       }
-      parsed_tax_fields: {
+      parsed_document_fields: {
         Row: {
           created_at: string
           extracted_fields: Json
@@ -315,9 +499,9 @@ export type Database = {
           extraction_model: string | null
           filing_status: string | null
           id: string
+          income_document_id: string
           profile_id: string
-          tax_document_id: string
-          tax_year: number
+          tax_year: number | null
           updated_at: string
           user_confirmation_status: string
           user_confirmed_at: string | null
@@ -329,9 +513,9 @@ export type Database = {
           extraction_model?: string | null
           filing_status?: string | null
           id?: string
+          income_document_id: string
           profile_id: string
-          tax_document_id: string
-          tax_year: number
+          tax_year?: number | null
           updated_at?: string
           user_confirmation_status?: string
           user_confirmed_at?: string | null
@@ -343,26 +527,26 @@ export type Database = {
           extraction_model?: string | null
           filing_status?: string | null
           id?: string
+          income_document_id?: string
           profile_id?: string
-          tax_document_id?: string
-          tax_year?: number
+          tax_year?: number | null
           updated_at?: string
           user_confirmation_status?: string
           user_confirmed_at?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "parsed_document_fields_income_document_id_fkey"
+            columns: ["income_document_id"]
+            isOneToOne: false
+            referencedRelation: "income_documents"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "parsed_tax_fields_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "parsed_tax_fields_tax_document_id_fkey"
-            columns: ["tax_document_id"]
-            isOneToOne: false
-            referencedRelation: "tax_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -405,69 +589,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      tax_documents: {
-        Row: {
-          delete_after: string
-          deleted_at: string | null
-          filename: string
-          id: string
-          mime_type: string
-          parse_completed_at: string | null
-          parse_status: string
-          profile_id: string
-          size_bytes: number
-          storage_path: string
-          tax_year: number
-          uploaded_at: string
-          vendor_terms_version_id: string
-        }
-        Insert: {
-          delete_after?: string
-          deleted_at?: string | null
-          filename: string
-          id?: string
-          mime_type: string
-          parse_completed_at?: string | null
-          parse_status?: string
-          profile_id: string
-          size_bytes: number
-          storage_path: string
-          tax_year: number
-          uploaded_at?: string
-          vendor_terms_version_id: string
-        }
-        Update: {
-          delete_after?: string
-          deleted_at?: string | null
-          filename?: string
-          id?: string
-          mime_type?: string
-          parse_completed_at?: string | null
-          parse_status?: string
-          profile_id?: string
-          size_bytes?: number
-          storage_path?: string
-          tax_year?: number
-          uploaded_at?: string
-          vendor_terms_version_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tax_documents_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tax_documents_vendor_terms_version_id_fkey"
-            columns: ["vendor_terms_version_id"]
-            isOneToOne: false
-            referencedRelation: "vendor_terms_versions"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       vendor_terms_versions: {
         Row: {
