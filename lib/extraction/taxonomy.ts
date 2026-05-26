@@ -15,11 +15,10 @@ export const DOCUMENT_TYPES: readonly DocumentType[] = [
   "other",
 ] as const;
 
-// Expected field keys per document type — used to steer the prompt only. NOT a
-// hard schema; the model returns a flat object and the jsonb stores it as-is.
-// Final taxonomy is owned by the Income-Calc Specialist; this is provisional so
-// v5 isn't blocked. The parsed_document_fields.extracted_fields jsonb absorbs
-// later changes without a migration.
+// Aligned with rules-v0.1.0 §3 (Income-Calc Specialist, Roby-signed 2026-05-26).
+// Final taxonomy — the engine in lib/income-calc reads exactly these keys.
+// parsed_document_fields.extracted_fields jsonb absorbs additions without a
+// schema change.
 export const PROVISIONAL_FIELDS: Record<DocumentType, string[]> = {
   paystub: [
     "employer_name",
@@ -27,9 +26,23 @@ export const PROVISIONAL_FIELDS: Record<DocumentType, string[]> = {
     "pay_period_end",
     "pay_date",
     "pay_frequency",
+    // Base / variable split (rules-v0.1.0 §3.1): base is used at run-rate;
+    // overtime/bonus/commission are averaged separately and haircut.
+    "base_pay_current",
+    "base_pay_ytd",
+    "overtime_current",
+    "overtime_ytd",
+    "bonus_current",
+    "bonus_ytd",
+    "commission_current",
+    "commission_ytd",
+    // Totals retained for cross-check against the split lines.
     "gross_pay_current",
     "gross_pay_ytd",
     "net_pay_current",
+    // Hourly earners (optional)
+    "hourly_rate",
+    "hours_worked_current",
   ],
   w2: [
     "employer_name",
@@ -44,14 +57,23 @@ export const PROVISIONAL_FIELDS: Record<DocumentType, string[]> = {
     "tax_year",
     "form_variant",
     "nonemployee_compensation",
-    "other_income",
+    // 'other_income' deprecated — no rule consumes it (rules-v0.1.0 §3.3).
   ],
   tax_return: [
     "tax_year",
     "filing_status",
     "total_income",
     "adjusted_gross_income",
-    "schedule_c_net_profit",
+    // Schedule C line items (rules-v0.1.0 §3.4) — engine consumes all of these.
+    "schedule_c_net_profit",           // Line 31
+    "schedule_c_depreciation",         // Line 13
+    "schedule_c_depletion",            // Line 12
+    "schedule_c_amortization_casualty",
+    "schedule_c_business_use_home",    // Form 8829
+    "schedule_c_business_miles",       // Part IV / Form 4562
+    "meals_entertainment_nondeductible",
+    "nonrecurring_other_income",
+    // Reserved for Phase 2; extraction may still capture them.
     "schedule_e_income",
     "k1_ordinary_income",
   ],
