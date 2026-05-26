@@ -1,0 +1,831 @@
+{
+  "rules_version": "rules-v0.1.0",
+  "revision": "r3-signoff-2026-05-26",
+  "generated_for_engine_columns": [
+    "qualifying_income_monthly",
+    "qualifying_income_annual",
+    "applied_addbacks",
+    "applied_haircuts",
+    "output_explanation",
+    "missing_inputs"
+  ],
+  "fixtures": [
+    {
+      "fixture_id": "w2_salaried_base_only",
+      "description": "Salaried W-2 wage earner, semimonthly pay, no variable income. The base case.",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "w2",
+        "paystub": {
+          "pay_frequency": "semimonthly",
+          "base_pay_current": 3750.0,
+          "base_pay_ytd": 33750.0,
+          "gross_pay_current": 3750.0,
+          "pay_date": "2026-05-15"
+        },
+        "documents": [
+          {
+            "document_type": "w2",
+            "extracted_fields": {
+              "tax_year": 2025,
+              "wages_box1": 90000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "qualifying_income_monthly": 7500.0,
+        "qualifying_income_annual": 90000.0,
+        "applied_addbacks": [],
+        "applied_haircuts": [],
+        "method_results": {
+          "fannie_monthly": 7500.0,
+          "freddie_monthly": 7500.0,
+          "fannie_annual": 90000.0,
+          "freddie_annual": 90000.0
+        },
+        "flags": [
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "paystub",
+            "field": "pay_period_end",
+            "severity": "informational",
+            "reason": "helpful for cross-check / YTD derivation"
+          }
+        ],
+        "output_explanation": "Base: 3750.0 (semimonthly, 24 periods/yr) x 24 / 12 = 7500.00/mo Total monthly = base 7500.00 + variable 0.00 = 7500.00 Annual = 7500.00 x 12 = 90000.00 Dual-agency presentation (both shown, no lower-of selection): Fannie 7500.00/mo, Freddie 7500.00/mo (Phase 1: identical). 1 input field(s) absent (0 critical, 1 informational); see missing_inputs.",
+        "derivation": [
+          "Base: 3750.0 (semimonthly, 24 periods/yr) x 24 / 12 = 7500.00/mo",
+          "Total monthly = base 7500.00 + variable 0.00 = 7500.00",
+          "Annual = 7500.00 x 12 = 90000.00",
+          "Dual-agency presentation (both shown, no lower-of selection): Fannie 7500.00/mo, Freddie 7500.00/mo (Phase 1: identical).",
+          "1 input field(s) absent (0 critical, 1 informational); see missing_inputs."
+        ],
+        "income_components": [
+          {
+            "name": "base",
+            "monthly": 7500.0
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "w2_base_plus_overtime_bonus_rising",
+      "description": "W-2 earner with base + recurring overtime (rising) + annual bonus (straight-averaged).",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "w2",
+        "paystub": {
+          "pay_frequency": "semimonthly",
+          "base_pay_current": 3750.0,
+          "base_pay_ytd": 33750.0,
+          "gross_pay_current": 4400.0,
+          "pay_date": "2026-05-15"
+        },
+        "variable_income": {
+          "months_ytd": 5,
+          "overtime": {
+            "prior_year_amount": 8400,
+            "ytd_amount": 3800
+          },
+          "bonus": {
+            "prior_year_amount": 6000,
+            "ytd_amount": 0
+          }
+        },
+        "documents": [
+          {
+            "document_type": "w2",
+            "extracted_fields": {
+              "tax_year": 2025,
+              "wages_box1": 104400
+            }
+          }
+        ]
+      },
+      "expected": {
+        "qualifying_income_monthly": 8570.59,
+        "qualifying_income_annual": 102847.08,
+        "applied_addbacks": [],
+        "applied_haircuts": [],
+        "method_results": {
+          "fannie_monthly": 8570.59,
+          "freddie_monthly": 8570.59,
+          "fannie_annual": 102847.08,
+          "freddie_annual": 102847.08
+        },
+        "flags": [
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "paystub",
+            "field": "pay_period_end",
+            "severity": "informational",
+            "reason": "helpful for cross-check / YTD derivation"
+          }
+        ],
+        "output_explanation": "Base: 3750.0 (semimonthly, 24 periods/yr) x 24 / 12 = 7500.00/mo overtime: 24-mo avg = (prior 8400 + YTD 3800) / (12 + 5) = 717.65/mo overtime: run-rate 760.00/mo >= prior-yr 700.00/mo (flat/rising): use 24-mo avg = 717.65/mo bonus: 24-mo avg = (prior 6000 + YTD 0) / (12 + 5) = 352.94/mo Total monthly = base 7500.00 + variable 1070.59 = 8570.59 Annual = 8570.59 x 12 = 102847.08 Dual-agency presentation (both shown, no lower-of selection): Fannie 8570.59/mo, Freddie 8570.59/mo (Phase 1: identical). 1 input field(s) absent (0 critical, 1 informational); see missing_inputs.",
+        "derivation": [
+          "Base: 3750.0 (semimonthly, 24 periods/yr) x 24 / 12 = 7500.00/mo",
+          "overtime: 24-mo avg = (prior 8400 + YTD 3800) / (12 + 5) = 717.65/mo",
+          "overtime: run-rate 760.00/mo >= prior-yr 700.00/mo (flat/rising): use 24-mo avg = 717.65/mo",
+          "bonus: 24-mo avg = (prior 6000 + YTD 0) / (12 + 5) = 352.94/mo",
+          "Total monthly = base 7500.00 + variable 1070.59 = 8570.59",
+          "Annual = 8570.59 x 12 = 102847.08",
+          "Dual-agency presentation (both shown, no lower-of selection): Fannie 8570.59/mo, Freddie 8570.59/mo (Phase 1: identical).",
+          "1 input field(s) absent (0 critical, 1 informational); see missing_inputs."
+        ],
+        "income_components": [
+          {
+            "name": "base",
+            "monthly": 7500.0
+          },
+          {
+            "name": "overtime",
+            "monthly": 717.65
+          },
+          {
+            "name": "bonus",
+            "monthly": 352.94
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "w2_overtime_declining_haircut",
+      "description": "W-2 earner whose overtime run-rate is below prior year -> declining-income haircut to current run-rate (no flag, per sign-off).",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "w2",
+        "paystub": {
+          "pay_frequency": "semimonthly",
+          "base_pay_current": 3750.0,
+          "base_pay_ytd": 33750.0,
+          "gross_pay_current": 4450.0,
+          "pay_date": "2026-05-15"
+        },
+        "variable_income": {
+          "months_ytd": 5,
+          "overtime": {
+            "prior_year_amount": 12000,
+            "ytd_amount": 3500
+          }
+        },
+        "documents": [
+          {
+            "document_type": "w2",
+            "extracted_fields": {
+              "tax_year": 2025,
+              "wages_box1": 102000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "qualifying_income_monthly": 8200.0,
+        "qualifying_income_annual": 98400.0,
+        "applied_addbacks": [],
+        "applied_haircuts": [
+          {
+            "name": "declining_overtime_income",
+            "reason": "overtime run-rate declined 30.0% vs prior year",
+            "from": 911.76,
+            "to": 700.0,
+            "decline_pct": 30.0
+          }
+        ],
+        "method_results": {
+          "fannie_monthly": 8200.0,
+          "freddie_monthly": 8200.0,
+          "fannie_annual": 98400.0,
+          "freddie_annual": 98400.0
+        },
+        "flags": [
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "paystub",
+            "field": "pay_period_end",
+            "severity": "informational",
+            "reason": "helpful for cross-check / YTD derivation"
+          }
+        ],
+        "output_explanation": "Base: 3750.0 (semimonthly, 24 periods/yr) x 24 / 12 = 7500.00/mo overtime: 24-mo avg = (prior 12000 + YTD 3500) / (12 + 5) = 911.76/mo overtime: declining (run-rate 700.00/mo < prior-yr 1000.00/mo, -30.0%): use current run-rate = 700.00/mo Total monthly = base 7500.00 + variable 700.00 = 8200.00 Annual = 8200.00 x 12 = 98400.00 Dual-agency presentation (both shown, no lower-of selection): Fannie 8200.00/mo, Freddie 8200.00/mo (Phase 1: identical). 1 input field(s) absent (0 critical, 1 informational); see missing_inputs.",
+        "derivation": [
+          "Base: 3750.0 (semimonthly, 24 periods/yr) x 24 / 12 = 7500.00/mo",
+          "overtime: 24-mo avg = (prior 12000 + YTD 3500) / (12 + 5) = 911.76/mo",
+          "overtime: declining (run-rate 700.00/mo < prior-yr 1000.00/mo, -30.0%): use current run-rate = 700.00/mo",
+          "Total monthly = base 7500.00 + variable 700.00 = 8200.00",
+          "Annual = 8200.00 x 12 = 98400.00",
+          "Dual-agency presentation (both shown, no lower-of selection): Fannie 8200.00/mo, Freddie 8200.00/mo (Phase 1: identical).",
+          "1 input field(s) absent (0 critical, 1 informational); see missing_inputs."
+        ],
+        "income_components": [
+          {
+            "name": "base",
+            "monthly": 7500.0
+          },
+          {
+            "name": "overtime",
+            "monthly": 700.0
+          }
+        ]
+      }
+    },
+    {
+      "fixture_id": "sole_prop_schedule_c_2yr_rising",
+      "description": "Sole proprietor, two years of Schedule C, rising net profit, full add-back set.",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "sole_prop",
+        "documents": [
+          {
+            "document_type": "tax_return",
+            "extracted_fields": {
+              "tax_year": 2024,
+              "schedule_c_net_profit": 92000,
+              "schedule_c_depreciation": 6000,
+              "schedule_c_business_use_home": 1800,
+              "schedule_c_business_miles": 4200
+            }
+          },
+          {
+            "document_type": "tax_return",
+            "extracted_fields": {
+              "tax_year": 2023,
+              "schedule_c_net_profit": 81000,
+              "schedule_c_depreciation": 5400,
+              "schedule_c_business_use_home": 1800,
+              "schedule_c_business_miles": 3000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "qualifying_income_monthly": 7920.83,
+        "qualifying_income_annual": 95050.0,
+        "applied_addbacks": [
+          {
+            "name": "depreciation",
+            "tax_year": 2024,
+            "amount": 6000.0
+          },
+          {
+            "name": "business_use_of_home",
+            "tax_year": 2024,
+            "amount": 1800.0
+          },
+          {
+            "name": "mileage_depreciation",
+            "tax_year": 2024,
+            "amount": 1260.0
+          },
+          {
+            "name": "depreciation",
+            "tax_year": 2023,
+            "amount": 5400.0
+          },
+          {
+            "name": "business_use_of_home",
+            "tax_year": 2023,
+            "amount": 1800.0
+          },
+          {
+            "name": "mileage_depreciation",
+            "tax_year": 2023,
+            "amount": 840.0
+          }
+        ],
+        "applied_haircuts": [],
+        "method_results": {
+          "fannie_monthly": 7920.83,
+          "freddie_monthly": 7920.83,
+          "fannie_annual": 95050.0,
+          "freddie_annual": 95050.0
+        },
+        "flags": [
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_depletion",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_amortization_casualty",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "meals_entertainment_nondeductible",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "nonrecurring_other_income",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_depletion",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_amortization_casualty",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "meals_entertainment_nondeductible",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "nonrecurring_other_income",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          }
+        ],
+        "output_explanation": "2024: Schedule C net profit (Line 31) = 92000.00 2024: + depreciation = 6000.00 2024: + business_use_of_home = 1800.00 2024: + mileage depreciation = 4200 mi x 0.30/mi = 1260.00 2024: adjusted annual = 101060.00 2023: Schedule C net profit (Line 31) = 81000.00 2023: + depreciation = 5400.00 2023: + business_use_of_home = 1800.00 2023: + mileage depreciation = 3000 mi x 0.28/mi = 840.00 2023: adjusted annual = 89040.00 Two-year average = (101060.00 + 89040.00) / 2 = 95050.00 Most recent year >= prior year (flat/rising): use 2-yr average = 95050.00 Monthly = 95050.00 / 12 = 7920.83 Dual-agency presentation (both shown, no lower-of selection): Fannie 7920.83/mo, Freddie 7920.83/mo (Phase 1: identical). 8 input field(s) absent (0 critical, 8 informational); see missing_inputs.",
+        "derivation": [
+          "2024: Schedule C net profit (Line 31) = 92000.00",
+          "2024: + depreciation = 6000.00",
+          "2024: + business_use_of_home = 1800.00",
+          "2024: + mileage depreciation = 4200 mi x 0.30/mi = 1260.00",
+          "2024: adjusted annual = 101060.00",
+          "2023: Schedule C net profit (Line 31) = 81000.00",
+          "2023: + depreciation = 5400.00",
+          "2023: + business_use_of_home = 1800.00",
+          "2023: + mileage depreciation = 3000 mi x 0.28/mi = 840.00",
+          "2023: adjusted annual = 89040.00",
+          "Two-year average = (101060.00 + 89040.00) / 2 = 95050.00",
+          "Most recent year >= prior year (flat/rising): use 2-yr average = 95050.00",
+          "Monthly = 95050.00 / 12 = 7920.83",
+          "Dual-agency presentation (both shown, no lower-of selection): Fannie 7920.83/mo, Freddie 7920.83/mo (Phase 1: identical).",
+          "8 input field(s) absent (0 critical, 8 informational); see missing_inputs."
+        ]
+      }
+    },
+    {
+      "fixture_id": "sole_prop_schedule_c_declining_haircut",
+      "description": "Sole proprietor with declining net profit -> use current-year (lower) figure, haircut applied (no flag, per sign-off).",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "sole_prop",
+        "documents": [
+          {
+            "document_type": "tax_return",
+            "extracted_fields": {
+              "tax_year": 2024,
+              "schedule_c_net_profit": 67000,
+              "schedule_c_depreciation": 5000
+            }
+          },
+          {
+            "document_type": "tax_return",
+            "extracted_fields": {
+              "tax_year": 2023,
+              "schedule_c_net_profit": 95000,
+              "schedule_c_depreciation": 5000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "qualifying_income_monthly": 6000.0,
+        "qualifying_income_annual": 72000.0,
+        "applied_addbacks": [
+          {
+            "name": "depreciation",
+            "tax_year": 2024,
+            "amount": 5000.0
+          }
+        ],
+        "applied_haircuts": [
+          {
+            "name": "declining_self_employment_income",
+            "reason": "net income declined 28.0% YoY; using current-year figure",
+            "from": 86000.0,
+            "to": 72000.0,
+            "decline_pct": 28.0
+          }
+        ],
+        "method_results": {
+          "fannie_monthly": 6000.0,
+          "freddie_monthly": 6000.0,
+          "fannie_annual": 72000.0,
+          "freddie_annual": 72000.0
+        },
+        "flags": [
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_depletion",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_amortization_casualty",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_business_use_home",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_business_miles",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "meals_entertainment_nondeductible",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "nonrecurring_other_income",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_depletion",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_amortization_casualty",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_business_use_home",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_business_miles",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "meals_entertainment_nondeductible",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "nonrecurring_other_income",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          }
+        ],
+        "output_explanation": "2024: Schedule C net profit (Line 31) = 67000.00 2024: + depreciation = 5000.00 2024: adjusted annual = 72000.00 2023: Schedule C net profit (Line 31) = 95000.00 2023: + depreciation = 5000.00 2023: adjusted annual = 100000.00 Two-year average = (72000.00 + 100000.00) / 2 = 86000.00 Most recent year < prior year (declining 28.0%): use current-year (lower) figure = 72000.00 instead of average 86000.00 Monthly = 72000.00 / 12 = 6000.00 Dual-agency presentation (both shown, no lower-of selection): Fannie 6000.00/mo, Freddie 6000.00/mo (Phase 1: identical). 12 input field(s) absent (0 critical, 12 informational); see missing_inputs.",
+        "derivation": [
+          "2024: Schedule C net profit (Line 31) = 67000.00",
+          "2024: + depreciation = 5000.00",
+          "2024: adjusted annual = 72000.00",
+          "2023: Schedule C net profit (Line 31) = 95000.00",
+          "2023: + depreciation = 5000.00",
+          "2023: adjusted annual = 100000.00",
+          "Two-year average = (72000.00 + 100000.00) / 2 = 86000.00",
+          "Most recent year < prior year (declining 28.0%): use current-year (lower) figure = 72000.00 instead of average 86000.00",
+          "Monthly = 72000.00 / 12 = 6000.00",
+          "Dual-agency presentation (both shown, no lower-of selection): Fannie 6000.00/mo, Freddie 6000.00/mo (Phase 1: identical).",
+          "12 input field(s) absent (0 critical, 12 informational); see missing_inputs."
+        ]
+      }
+    },
+    {
+      "fixture_id": "contractor_1099_with_schedule_c",
+      "description": "1099 contractor WITH filed Schedule C: gross 1099 retained as supporting doc, qualifying income from net + add-backs.",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "1099",
+        "documents": [
+          {
+            "document_type": "form_1099",
+            "extracted_fields": {
+              "tax_year": 2024,
+              "form_variant": "1099-NEC",
+              "nonemployee_compensation": 130000
+            }
+          },
+          {
+            "document_type": "tax_return",
+            "extracted_fields": {
+              "tax_year": 2024,
+              "schedule_c_net_profit": 88000,
+              "schedule_c_depreciation": 4000
+            }
+          },
+          {
+            "document_type": "tax_return",
+            "extracted_fields": {
+              "tax_year": 2023,
+              "schedule_c_net_profit": 80000,
+              "schedule_c_depreciation": 4000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "qualifying_income_monthly": 7333.33,
+        "qualifying_income_annual": 88000.0,
+        "applied_addbacks": [
+          {
+            "name": "depreciation",
+            "tax_year": 2024,
+            "amount": 4000.0
+          },
+          {
+            "name": "depreciation",
+            "tax_year": 2023,
+            "amount": 4000.0
+          }
+        ],
+        "applied_haircuts": [],
+        "method_results": {
+          "fannie_monthly": 7333.33,
+          "freddie_monthly": 7333.33,
+          "fannie_annual": 88000.0,
+          "freddie_annual": 88000.0
+        },
+        "flags": [
+          "1099_income_derived_from_schedule_c",
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_depletion",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_amortization_casualty",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_business_use_home",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "schedule_c_business_miles",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "meals_entertainment_nondeductible",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2024",
+            "field": "nonrecurring_other_income",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_depletion",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_amortization_casualty",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_business_use_home",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "schedule_c_business_miles",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "meals_entertainment_nondeductible",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          },
+          {
+            "scope": "tax_return:2023",
+            "field": "nonrecurring_other_income",
+            "severity": "informational",
+            "reason": "optional add-back/subtraction; confirm none if not applicable"
+          }
+        ],
+        "output_explanation": "1099 nonemployee compensation present but NOT used directly; qualifying income derived from Schedule C net profit + add-backs (same path as sole proprietor). 1099 retained as a supporting document. 2024: Schedule C net profit (Line 31) = 88000.00 2024: + depreciation = 4000.00 2024: adjusted annual = 92000.00 2023: Schedule C net profit (Line 31) = 80000.00 2023: + depreciation = 4000.00 2023: adjusted annual = 84000.00 Two-year average = (92000.00 + 84000.00) / 2 = 88000.00 Most recent year >= prior year (flat/rising): use 2-yr average = 88000.00 Monthly = 88000.00 / 12 = 7333.33 Dual-agency presentation (both shown, no lower-of selection): Fannie 7333.33/mo, Freddie 7333.33/mo (Phase 1: identical). 12 input field(s) absent (0 critical, 12 informational); see missing_inputs.",
+        "derivation": [
+          "1099 nonemployee compensation present but NOT used directly; qualifying income derived from Schedule C net profit + add-backs (same path as sole proprietor). 1099 retained as a supporting document.",
+          "2024: Schedule C net profit (Line 31) = 88000.00",
+          "2024: + depreciation = 4000.00",
+          "2024: adjusted annual = 92000.00",
+          "2023: Schedule C net profit (Line 31) = 80000.00",
+          "2023: + depreciation = 4000.00",
+          "2023: adjusted annual = 84000.00",
+          "Two-year average = (92000.00 + 84000.00) / 2 = 88000.00",
+          "Most recent year >= prior year (flat/rising): use 2-yr average = 88000.00",
+          "Monthly = 88000.00 / 12 = 7333.33",
+          "Dual-agency presentation (both shown, no lower-of selection): Fannie 7333.33/mo, Freddie 7333.33/mo (Phase 1: identical).",
+          "12 input field(s) absent (0 critical, 12 informational); see missing_inputs."
+        ],
+        "reported_gross_1099": 130000.0
+      }
+    },
+    {
+      "fixture_id": "contractor_1099_supporting_only",
+      "description": "1099 with no tax return: ACCEPTED as a supporting document; gross is not qualifying income; qualifying is pending a Schedule C or borrower estimate.",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "1099",
+        "documents": [
+          {
+            "document_type": "form_1099",
+            "extracted_fields": {
+              "tax_year": 2024,
+              "form_variant": "1099-NEC",
+              "nonemployee_compensation": 130000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "qualifying_income_monthly": 0.0,
+        "qualifying_income_annual": 0.0,
+        "applied_addbacks": [],
+        "applied_haircuts": [],
+        "method_results": {
+          "fannie_monthly": 0.0,
+          "freddie_monthly": 0.0,
+          "fannie_annual": 0.0,
+          "freddie_annual": 0.0
+        },
+        "flags": [
+          "1099_accepted_as_supporting_document",
+          "pending_schedule_c",
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "documents",
+            "field": "tax_return",
+            "severity": "critical",
+            "reason": "no Schedule C / tax return supplied; required to compute verified qualifying income"
+          },
+          {
+            "scope": "user_imputed",
+            "field": "estimated_net_profit",
+            "severity": "critical",
+            "reason": "no borrower-imputed net supplied; required to compute a provisional figure"
+          }
+        ],
+        "output_explanation": "1099 accepted and retained as a supporting document. Gross nonemployee compensation is NOT qualifying income; net self-employment income must come from a Schedule C (or a borrower-imputed estimate). Qualifying income is PENDING that input.",
+        "derivation": [
+          "1099 accepted and retained as a supporting document. Gross nonemployee compensation is NOT qualifying income; net self-employment income must come from a Schedule C (or a borrower-imputed estimate). Qualifying income is PENDING that input."
+        ],
+        "reported_gross_1099": 130000.0
+      }
+    },
+    {
+      "fixture_id": "contractor_1099_user_imputed_net",
+      "description": "1099 with no tax return, but the borrower imputes estimated net profit -> PROVISIONAL qualifying figure flagged user_imputed_unverified.",
+      "rules_version": "rules-v0.1.0",
+      "inputs": {
+        "employment_type": "1099",
+        "documents": [
+          {
+            "document_type": "form_1099",
+            "extracted_fields": {
+              "tax_year": 2024,
+              "form_variant": "1099-NEC",
+              "nonemployee_compensation": 130000
+            }
+          }
+        ],
+        "user_imputed": {
+          "years": [
+            {
+              "tax_year": 2024,
+              "estimated_net_profit": 84000
+            }
+          ]
+        }
+      },
+      "expected": {
+        "qualifying_income_monthly": 7000.0,
+        "qualifying_income_annual": 84000.0,
+        "applied_addbacks": [],
+        "applied_haircuts": [],
+        "method_results": {
+          "fannie_monthly": 7000.0,
+          "freddie_monthly": 7000.0,
+          "fannie_annual": 84000.0,
+          "freddie_annual": 84000.0
+        },
+        "flags": [
+          "1099_accepted_as_supporting_document",
+          "user_imputed_unverified",
+          "insufficient_history_self_employment",
+          "has_missing_inputs"
+        ],
+        "missing_inputs": [
+          {
+            "scope": "user_imputed:2024",
+            "field": "estimated_depreciation",
+            "severity": "informational",
+            "reason": "optional borrower-imputed value; improves provisional figure accuracy"
+          },
+          {
+            "scope": "user_imputed:2024",
+            "field": "estimated_depletion",
+            "severity": "informational",
+            "reason": "optional borrower-imputed value; improves provisional figure accuracy"
+          },
+          {
+            "scope": "user_imputed:2024",
+            "field": "estimated_amortization_casualty",
+            "severity": "informational",
+            "reason": "optional borrower-imputed value; improves provisional figure accuracy"
+          },
+          {
+            "scope": "user_imputed:2024",
+            "field": "estimated_business_use_of_home",
+            "severity": "informational",
+            "reason": "optional borrower-imputed value; improves provisional figure accuracy"
+          },
+          {
+            "scope": "user_imputed:2024",
+            "field": "estimated_business_miles",
+            "severity": "informational",
+            "reason": "optional borrower-imputed value; improves provisional figure accuracy"
+          },
+          {
+            "scope": "user_imputed:2024",
+            "field": "estimated_meals_entertainment_nondeductible",
+            "severity": "informational",
+            "reason": "optional borrower-imputed value; improves provisional figure accuracy"
+          },
+          {
+            "scope": "user_imputed:2024",
+            "field": "estimated_nonrecurring_other_income",
+            "severity": "informational",
+            "reason": "optional borrower-imputed value; improves provisional figure accuracy"
+          }
+        ],
+        "output_explanation": "No tax return supplied. 1099 retained as a supporting document; borrower-imputed net income used to compute a PROVISIONAL figure (user_imputed_unverified \u2014 not underwriting-grade until a Schedule C is provided). 2024: Schedule C net profit (Line 31) = 84000.00 2024: adjusted annual = 84000.00 Only one year supplied (2024); using single-year figure (flagged: <2yr history). Monthly = 84000.00 / 12 = 7000.00 Dual-agency presentation (both shown, no lower-of selection): Fannie 7000.00/mo, Freddie 7000.00/mo (Phase 1: identical). 7 input field(s) absent (0 critical, 7 informational); see missing_inputs.",
+        "derivation": [
+          "No tax return supplied. 1099 retained as a supporting document; borrower-imputed net income used to compute a PROVISIONAL figure (user_imputed_unverified \u2014 not underwriting-grade until a Schedule C is provided).",
+          "2024: Schedule C net profit (Line 31) = 84000.00",
+          "2024: adjusted annual = 84000.00",
+          "Only one year supplied (2024); using single-year figure (flagged: <2yr history).",
+          "Monthly = 84000.00 / 12 = 7000.00",
+          "Dual-agency presentation (both shown, no lower-of selection): Fannie 7000.00/mo, Freddie 7000.00/mo (Phase 1: identical).",
+          "7 input field(s) absent (0 critical, 7 informational); see missing_inputs."
+        ],
+        "reported_gross_1099": 130000.0
+      }
+    }
+  ]
+}
