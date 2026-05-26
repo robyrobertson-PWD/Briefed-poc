@@ -68,6 +68,47 @@ export type Database = {
           },
         ]
       }
+      borrower_inputs: {
+        Row: {
+          created_at: string
+          created_via: string
+          field: string
+          id: string
+          profile_id: string
+          scope: string
+          tax_year: number | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          created_via: string
+          field: string
+          id?: string
+          profile_id: string
+          scope: string
+          tax_year?: number | null
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          created_via?: string
+          field?: string
+          id?: string
+          profile_id?: string
+          scope?: string
+          tax_year?: number | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "borrower_inputs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_categories: {
         Row: {
           description: string
@@ -343,14 +384,19 @@ export type Database = {
           display_surface: string
           displayed_to_user_at: string
           engine_version: string
+          flags: Json
           id: string
+          income_components: Json | null
           input_bank_connection_ids: string[]
           input_document_ids: string[]
           input_snapshot_sha256: string
+          method_results: Json
+          missing_inputs: Json
           output_explanation: string | null
           profile_id: string
           qualifying_income_annual: number
           qualifying_income_monthly: number
+          reported_gross_1099: number | null
           rules_version: string
           source_review_id: string | null
         }
@@ -361,14 +407,19 @@ export type Database = {
           display_surface: string
           displayed_to_user_at?: string
           engine_version: string
+          flags?: Json
           id?: string
+          income_components?: Json | null
           input_bank_connection_ids?: string[]
           input_document_ids?: string[]
           input_snapshot_sha256: string
+          method_results?: Json
+          missing_inputs?: Json
           output_explanation?: string | null
           profile_id: string
           qualifying_income_annual: number
           qualifying_income_monthly: number
+          reported_gross_1099?: number | null
           rules_version: string
           source_review_id?: string | null
         }
@@ -379,14 +430,19 @@ export type Database = {
           display_surface?: string
           displayed_to_user_at?: string
           engine_version?: string
+          flags?: Json
           id?: string
+          income_components?: Json | null
           input_bank_connection_ids?: string[]
           input_document_ids?: string[]
           input_snapshot_sha256?: string
+          method_results?: Json
+          missing_inputs?: Json
           output_explanation?: string | null
           profile_id?: string
           qualifying_income_annual?: number
           qualifying_income_monthly?: number
+          reported_gross_1099?: number | null
           rules_version?: string
           source_review_id?: string | null
         }
