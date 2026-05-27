@@ -12,19 +12,17 @@ import type {
   VariableIncomeBlock,
 } from "./types";
 import { mileageDepreciationRate } from "./mileage";
+import { roundHalfUp } from "@/lib/util/round";
+
+// Re-export so existing callers (engine.ts, fixture tests) keep importing
+// `roundHalfUp` from "@/lib/income-calc/rules" without touching their code.
+// The canonical definition now lives in lib/util/round.ts so loan-calc can
+// share it.
+export { roundHalfUp };
 
 // -----------------------------------------------------------------
 // Money & frequency helpers (rules-v0.1.0 §2)
 // -----------------------------------------------------------------
-
-// ROUND_HALF_UP for both positive and negative magnitudes. JS's built-in
-// Math.round rounds .5 towards +Infinity (so -0.5 -> 0), which is NOT
-// half-up. The explicit floor-of-(|n|*f + .5) is.
-export function roundHalfUp(n: number, decimals: number): number {
-  const factor = 10 ** decimals;
-  const sign = n < 0 ? -1 : 1;
-  return (sign * Math.floor(Math.abs(n) * factor + 0.5)) / factor;
-}
 
 export function periodsPerYear(freq: PayFrequency): number {
   switch (freq) {
