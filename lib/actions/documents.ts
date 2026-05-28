@@ -2,10 +2,12 @@
 
 import "server-only";
 import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
 import { ensureProfile } from "@/lib/profile";
 import { recordConsent } from "@/lib/actions/consent";
 import { extractIncomeFields, scrubPii } from "@/lib/anthropic/extract";
+import { runAndPersist } from "@/lib/income-calc/engine";
 import { DOCUMENT_TYPES, type DocumentType } from "@/lib/extraction/taxonomy";
 import type { Json } from "@/lib/supabase/types";
 
@@ -280,5 +282,20 @@ export async function confirmExtraction(args: {
     .update(update)
     .eq("id", args.parsedFieldId);
   if (updateErr) return { ok: false, error: updateErr.message };
+
+  // Re-run the engine so /income reflects the new evidence. The engine reads
+  // only rows with user_confirmation_status in ('confirmed','corrected'), so
+  // any status transition here may change the input set:
+  //   pending → confirmed/corrected : doc added to engine inputs
+  //   confirmed/corrected → rejected: doc removed from engine inputs
+  // Swallow engine failures so the confirmation itself still succeeds — the
+  // aha screen will render whatever the latest income_outputs row looks like.
+  // Same discipline as borrower-inputs.ts:insertAndRecompute (spec-v7 PR 4b).
+  try {
+    await runAndPersist({ profileId, displaySurface: "aha_screen" });
+  } catch {
+    /* engine failure does not roll back the confirmation */
+  }
+  revalidatePath("/income");
   return { ok: true };
 }
