@@ -36,13 +36,13 @@ type IncomeDocJoinRow = {
   user_confirmation_status: string;
   income_document_id: string;
   income_documents:
-    | { document_type: string; pay_date: string | null; period_end?: string | null }
-    | { document_type: string; pay_date: string | null; period_end?: string | null }[];
+    | { document_type: string; period_end?: string | null }
+    | { document_type: string; period_end?: string | null }[];
 };
 
 function asDoc(
   d: IncomeDocJoinRow["income_documents"],
-): { document_type: string; pay_date: string | null; period_end?: string | null } {
+): { document_type: string; period_end?: string | null } {
   return Array.isArray(d) ? d[0] : d;
 }
 
@@ -52,7 +52,7 @@ export async function assembleInput(profileId: string): Promise<IncomeCalcInput>
   const { data: parsed, error: parsedErr } = await supabase
     .from("parsed_document_fields")
     .select(
-      "id, extracted_fields, tax_year, user_confirmation_status, income_document_id, income_documents!inner(document_type, pay_date, period_end)",
+      "id, extracted_fields, tax_year, user_confirmation_status, income_document_id, income_documents!inner(document_type, period_end)",
     )
     .eq("profile_id", profileId)
     .in("user_confirmation_status", ["confirmed", "corrected"]);
@@ -93,14 +93,19 @@ export async function assembleInput(profileId: string): Promise<IncomeCalcInput>
   const parsedRows = (parsed ?? []) as unknown as IncomeDocJoinRow[];
 
   // Most recent paystub (by pay_date desc, then period_end desc).
+  // pay_date lives in parsed_document_fields.extracted_fields (jsonb), not on
+  // income_documents — the v4 schema only has period_start / period_end. The
+  // engine reads it from extracted_fields and falls back to period_end.
   const paystubs = parsedRows.filter(
     (r) => asDoc(r.income_documents).document_type === "paystub",
   );
   paystubs.sort((a, b) => {
+    const af = (a.extracted_fields ?? {}) as Record<string, unknown>;
+    const bf = (b.extracted_fields ?? {}) as Record<string, unknown>;
     const ad = asDoc(a.income_documents);
     const bd = asDoc(b.income_documents);
-    const aKey = ad.pay_date ?? ad.period_end ?? "";
-    const bKey = bd.pay_date ?? bd.period_end ?? "";
+    const aKey = (af.pay_date as string | undefined) ?? ad.period_end ?? "";
+    const bKey = (bf.pay_date as string | undefined) ?? bd.period_end ?? "";
     return bKey.localeCompare(aKey);
   });
 
