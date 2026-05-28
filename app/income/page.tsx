@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { ensureProfile } from "@/lib/profile";
 import {
   getEmploymentType,
+  getLatestIncomeOutput,
   getLoanScenario,
   hasConfirmedDocument,
   isLoanScenarioComplete,
@@ -20,6 +21,7 @@ import {
 import { EmploymentTypeStep } from "@/components/income/employment-type-step";
 import { LoanScenarioStep } from "@/components/income/loan-scenario-step";
 import { UploadPrompt } from "@/components/income/upload-prompt";
+import { AhaScreen } from "@/components/income/aha-screen";
 
 export const dynamic = "force-dynamic"; // read state per request
 
@@ -64,13 +66,17 @@ export default async function IncomePage() {
     );
   }
 
-  // State 4: aha screen (PR 4c). For now, render UploadPrompt with a notice.
+  // State 4: aha screen. Read the latest income_outputs row (may be null if
+  // the engine has never run for this profile). AhaScreen handles null
+  // gracefully — it still renders the verdict block with $0 qualifying +
+  // an employment_type/missing-inputs nudge.
+  const latestOutput = await getLatestIncomeOutput(profileId);
   return (
     <PageShell title="Your pre-qual estimate">
-      <UploadPrompt
+      <AhaScreen
+        output={latestOutput}
         employmentType={employmentType}
         loanScenario={loanScenario}
-        notice="Aha screen coming in PR 4c. For now, your documents are confirmed."
       />
     </PageShell>
   );

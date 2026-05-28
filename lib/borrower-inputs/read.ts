@@ -8,7 +8,10 @@
 // any document has been confirmed yet — to decide which step to render.
 
 import { createServerClient } from "@/lib/supabase/server";
-import type { EmploymentType } from "@/lib/income-calc/types";
+import type {
+  EmploymentType,
+  IncomeCalcOutput,
+} from "@/lib/income-calc/types";
 
 export interface LoanScenarioState {
   price: number | null;
@@ -88,4 +91,44 @@ export async function hasConfirmedDocument(profileId: string): Promise<boolean> 
   if (error)
     throw new Error(`parsed_document_fields read failed: ${error.message}`);
   return (count ?? 0) > 0;
+}
+
+// -----------------------------------------------------------------
+// income_outputs read helper (PR 4c, spec v7 §4.3)
+// -----------------------------------------------------------------
+// The persisted row's shape. `derivation` is NOT a column — the engine joins
+// it into `output_explanation` before persisting. `output_explanation` is
+// nullable in the schema (defaulted null at insert time), so we relax it
+// from IncomeCalcOutput's required-string contract. The jsonb columns
+// (applied_addbacks, applied_haircuts, flags, method_results,
+// income_components, missing_inputs) hold the engine's typed shapes at
+// runtime — the boundary cast in getLatestIncomeOutput honors this.
+export interface IncomeOutputRow
+  extends Omit<IncomeCalcOutput, "derivation" | "output_explanation"> {
+  id: string;
+  engine_version: string;
+  rules_version: string;
+  input_snapshot_sha256: string;
+  output_explanation: string | null;
+  created_at: string;
+}
+
+export async function getLatestIncomeOutput(
+  profileId: string,
+): Promise<IncomeOutputRow | null> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("income_outputs")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(`income_outputs read failed: ${error.message}`);
+  if (!data) return null;
+  // Cast at the boundary: jsonb columns are typed as `Json` by supabase
+  // typegen but the engine writes them as the structured shapes referenced
+  // in IncomeCalcOutput. Same pattern as engine.ts's `as unknown as Json`
+  // on the write path, reversed.
+  return data as unknown as IncomeOutputRow;
 }
